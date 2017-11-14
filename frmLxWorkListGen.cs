@@ -236,12 +236,17 @@ namespace LxWorkList
 
         private string outputPatientList()      //output patient list as .txt file for Luminex IS100 software import
         {
-            string tempsampleid = "";
+            string tempsampleid = "";       // temp string sample id
+            string temptxt = "";       // temp string for Luminex machine list
+            string tempcsv = "";       // temp string for Fusion patient list
+
             if (OutputfileName.IndexOf(".txt") > 0) //.txt exists = treeview nodes of runs have been clicked
             {
-                StreamWriter writer = new StreamWriter(OutputPath + OutputfileName);
-                writer.WriteLine("LX100IS Patient List");               //default line 1
-                writer.WriteLine("[Accession#, Dilution Factor]");      //default line 2   ...didn't wrote in one Writeline so \r\n vs \n can be avoided?
+                StreamWriter txtWriter = new StreamWriter(OutputPath + OutputfileName);
+                StreamWriter csvWriter = new StreamWriter(OutputPath + OutputfileName.Replace(".txt", ".csv"));
+
+                txtWriter.WriteLine("LX100IS Patient List");               //default line 1
+                txtWriter.WriteLine("[Accession#, Dilution Factor]");      //default line 2   ...didn't wrote in one Writeline so \r\n vs \n can be avoided?
                
                 foreach (WorkListItem sample in CurrentWorkList)
                 {
@@ -250,20 +255,31 @@ namespace LxWorkList
                                    sample.SampleDate + " " +
                                    sample.Treated +
                                    sample.AdsorbOut;
-                    tempsampleid = tempsampleid.Replace(" -1", "");     //remove "-1" for control samples
-                    tempsampleid = tempsampleid.Replace("  ", " ");     //remove excess white space
-                    writer.WriteLine(tempsampleid);
+                    temptxt = tempsampleid.Replace(" -1", "");     //remove "-1" for control samples
+                    temptxt = temptxt.Replace("  ", " ");     //remove excess white space
 
+                    txtWriter.WriteLine(temptxt);
+
+
+                    if (sample.RenalID >= 1)
+                    {
+                        tempcsv = "," + tempsampleid + "," + sample.RenalID + "," + sample.SampleDate;
+                        csvWriter.WriteLine(tempcsv);
+                    }
+
+                    
                 }
-                writer.WriteLine("LX AB SERUM");
-                writer.Close();
+                txtWriter.WriteLine("LX AB SERUM");
+                txtWriter.Close();
+                csvWriter.Close();
                 return "A patient list is exported to: " + (OutputPath + OutputfileName).ToUpper();
             }
             else
                 return "Error making patient list!";
         }
 
-        private string HSCTSuffix(WorkListItem sample)  //check names for "HSC(T)" 
+
+         private string HSCTSuffix(WorkListItem sample)  //check names for "HSC(T)" 
         {
             string lastname, firstname;
            
@@ -295,15 +311,10 @@ namespace LxWorkList
             }
         }
 
-        private void updateWorkListTestedDate()
-        {
-            // yet to be implemented
-        }
 
         private void btMakeList_Click(object sender, EventArgs e)
         {
             MessageBox.Show(outputPatientList());       //show where the patient list is exported
-            updateWorkListTestedDate();
         }
 
         private void displayCurrentWorklist()  //get data, format and display in a datagrid 
@@ -341,7 +352,8 @@ namespace LxWorkList
             this.dataGridView1.Columns["A/O"].Width = 50;
         }
 
-        private DataTable readPatientsDBFfromRS()       //read patients table from Renal system (can't read Rlist.dbf same error as importing into Access)
+        private DataTable readPatientsDBFfromRS()      
+        //read patients table from Renal system (can't read Rlist.dbf same error as importing into Access)
         {
             DataTable dtable = new DataTable();
             string[] colnames = new string[] { "Renal Number", "Last Name", "First Name" };
@@ -354,9 +366,15 @@ namespace LxWorkList
             OleDbDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
+                Int32 _number = Int32.Parse(reader["number"].ToString());
+                String _last = reader["last"].ToString().Trim();
+                String _first = reader["first"].ToString().Trim();
+
                 dtable.Rows.Add(
-                    Int32.Parse(reader["number"].ToString()), reader["last"].ToString().Trim(), reader["first"].ToString().Trim()
+                    _number, _last, _first
                     );
+
+
             }
 
             return dtable;

@@ -68,7 +68,7 @@ namespace LxWorkList.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=c:\\temp\\renal;User ID=Admin;Extended" +
+        [global::System.Configuration.DefaultSettingValueAttribute("Provider=Microsoft.ACE.OLEDB.12.0;Data Source=c:\\temp\\renal;User ID=Admin;Extended" +
             " Properties=\"dBASE IV\"")]
         public string RenalSystemDBFlocal {
             get {
